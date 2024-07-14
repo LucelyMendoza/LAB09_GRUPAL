@@ -1,4 +1,5 @@
 package com.idnp2024a.lab_09
+
 import android.app.Notification
 import android.app.PendingIntent
 import android.app.Service
@@ -7,7 +8,6 @@ import android.media.MediaPlayer
 import android.os.Binder
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
-import com.idnp2024a.lab_09.R
 
 class AudioPlayService : Service() {
 
@@ -22,6 +22,8 @@ class AudioPlayService : Service() {
         const val PAUSE = "PAUSE"
         const val RESUME = "RESUME"
         const val STOP = "STOP"
+        const val START_FOREGROUND = "START_FOREGROUND"
+        const val STOP_FOREGROUND = "STOP_FOREGROUND"
     }
 
     override fun onCreate() {
@@ -48,22 +50,15 @@ class AudioPlayService : Service() {
                 if (filename != currentFile) {
                     currentFile = filename
                     startPlayback(filename)
-                    startForegroundService()
                 } else {
                     resumePlayback()
                 }
             }
-            PAUSE -> {
-                pausePlayback()
-            }
-            RESUME -> {
-                resumePlayback()
-            }
-            STOP -> {
-                stopPlayback()
-                stopForeground(true)
-                stopSelf()
-            }
+            PAUSE -> pausePlayback()
+            RESUME -> resumePlayback()
+            STOP -> stopPlayback()
+            START_FOREGROUND -> startForegroundService()
+            STOP_FOREGROUND -> stopForeground(true)
         }
     }
 
@@ -106,7 +101,6 @@ class AudioPlayService : Service() {
     }
 
     private fun startForegroundService() {
-        // Crear canal de notificación si se está ejecutando en Android Oreo o superior
         NotificationHelper.createNotificationChannel(this)
 
         val notificationIntent = Intent(this, MainActivity::class.java)
@@ -119,7 +113,7 @@ class AudioPlayService : Service() {
 
         val notification: Notification = NotificationCompat.Builder(this, NotificationHelper.CHANNEL_ID)
             .setContentTitle("Reproduciendo Audio")
-            .setContentText(currentFile)  // Mostrar el nombre del archivo actual
+            .setContentText(currentFile)
             .setSmallIcon(R.drawable.ic_music_note)
             .setContentIntent(pendingIntent)
             .setPriority(NotificationCompat.PRIORITY_LOW)

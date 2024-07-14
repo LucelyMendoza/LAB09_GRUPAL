@@ -4,7 +4,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
-import com.idnp2024a.lab_09.R
 
 class MainActivity : AppCompatActivity() {
     private lateinit var audioPlayServiceIntent: Intent
@@ -19,7 +18,7 @@ class MainActivity : AppCompatActivity() {
         // Listener para el botón Play
         findViewById<Button>(R.id.btnPlay).setOnClickListener {
             audioPlayServiceIntent.apply {
-                putExtra(AudioPlayService.FILENAME, "image004.mp3") // Reemplaza con el nombre real de tu archivo
+                putExtra(AudioPlayService.FILENAME, "image004.mp3")
                 putExtra(AudioPlayService.COMMAND, AudioPlayService.PLAY)
             }
             startService(audioPlayServiceIntent)
@@ -50,9 +49,17 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        // Cancelar la notificación cuando se destruya la actividad
-        NotificationHelper.cancelNotification(this)
+    override fun onStop() {
+        super.onStop()
+        // Iniciar el servicio en primer plano cuando la aplicación se vaya al fondo
+        audioPlayServiceIntent.putExtra(AudioPlayService.COMMAND, AudioPlayService.START_FOREGROUND)
+        startService(audioPlayServiceIntent)
+    }
+
+    override fun onStart() {
+        super.onStart()
+        // Detener el servicio en primer plano cuando la aplicación vuelva a estar en primer plano
+        audioPlayServiceIntent.putExtra(AudioPlayService.COMMAND, AudioPlayService.STOP_FOREGROUND)
+        startService(audioPlayServiceIntent)
     }
 }
